@@ -33,5 +33,5 @@ app.use(bodyParser.urlencoded({ extended: true }))
 require('./src/User/User')(app, client)
 
 
-const server = app.listen(process.env.PORT || 3000, () => console.log('\nCodeFoo NodeJS listening on port %s\nPress Ctrl-C to quit...\n', server.address().port) );
+const server = app.listen(process.env.PORT || 8080, () => console.log('\nCodeFoo NodeJS listening on port %s\nPress Ctrl-C to quit...\n', server.address().port) );
 
