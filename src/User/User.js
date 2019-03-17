@@ -3,7 +3,8 @@ module.exports = function (app, client) {
   app.get('/', async (req, res) => {
 
     try {
-      const result = await client.query(`select * from user_account where first_name = Rutwe`)
+      const name = 'Rutwe'
+      const result = await client.query(`select * from user_account where first_name = ${name}`)
       console.log(result.rows)
       res.status(200).send(result.rows)
     }
