@@ -10,7 +10,7 @@ services:
       - ./pgdata:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-  web:
+  node:
     image: code_foo_node_image
     depends_on:
       - db

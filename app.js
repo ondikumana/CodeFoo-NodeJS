@@ -13,7 +13,7 @@ const { Client } = require('pg')
 const client = new Client({
   user: 'postgres',
   host: SERVER_IP_ADDRESS,
-  database: 'master',
+  database: 'postgres',
   password: 'password',
   port: 5432,
 })
@@ -25,6 +25,7 @@ const connectToDatabase = async () => {
   while (connectionRetries) {
     try {
       await client.connect()
+      break;
     }
     catch (error) {
       console.log(error)
