@@ -18,21 +18,27 @@ const client = new Client({
   port: 5432,
 })
 
-let connectionRetries = 5
+const connectToDatabase = async () => {
 
-while (connectionRetries) {
-  try {
-    await client.connect()
-  }
-  catch (error) {
-    console.log(err)
-    connectionRetries--
-    console.log(`connectionRetries left: ${connectionRetries}`)
+  let connectionRetries = 5
 
-    // waits five seconds before trying again
-    await new Promise( res => setTimeout(res, 5000))
+  while (connectionRetries) {
+    try {
+      await client.connect()
+    }
+    catch (error) {
+      console.log(error)
+      connectionRetries--
+      console.log(`connectionRetries left: ${connectionRetries}`)
+
+      // waits five seconds before trying again
+      await new Promise(res => setTimeout(res, 5000))
+    }
   }
+
 }
+
+connectToDatabase()
 
 cors({ credentials: true, origin: true })
 app.use(cors())
@@ -45,6 +51,9 @@ app.use(bodyParser.urlencoded({ extended: true }))
 // routes in different files
 
 require('./src/User/User')(app, client)
+
+
+
 
 
 const server = app.listen(9999, () => console.log('\nCodeFoo NodeJS listening on port %s\nPress Ctrl-C to quit...\n', server.address().port));
