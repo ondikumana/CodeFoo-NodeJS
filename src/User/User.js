@@ -4,7 +4,7 @@ module.exports = function (app, client) {
 
     try {
       const name = 'Rutwe'
-      const result = await client.query(`select * from user_account where first_name = ${name}`)
+      const result = await client.query(`select * from user_account where first_name = '${name}'`)
       console.log(result.rows)
       res.status(200).send(result.rows)
     }
