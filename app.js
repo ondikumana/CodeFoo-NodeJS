@@ -19,7 +19,7 @@ const client = new Client({
   port: 5432,
 })
 
-client.connect()
+client.connect().catch( err => console.log(err))
 
 cors({credentials: true, origin: true})
 app.use(cors())
