@@ -50,12 +50,9 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
 // routes in different files
-
 require('./src/User/User')(app, client)
-
-
-
-
+require('./src/Session/Session')(app, client)
+require('./src/Message/Message')(app, client)
 
 const server = app.listen(9999, () => console.log('\nCodeFoo NodeJS listening on port %s\nPress Ctrl-C to quit...\n', server.address().port));
 

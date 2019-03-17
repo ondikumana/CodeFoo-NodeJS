@@ -41,7 +41,7 @@ CREATE FUNCTION notify_new_message ()
     AS $$
 BEGIN
     PERFORM
-        pg_notify('newMessage', NEW);
+        pg_notify('new_message', row_to_json(NEW)::text);
     RETURN NULL;
 END;
 $$;
@@ -54,6 +54,7 @@ CREATE FUNCTION create_session_messages_table ()
     AS $$
 DECLARE
     session_id VARCHAR := CAST(NEW.session_id AS VARCHAR);
+    session_id_table_name VARCHAR := 'messages_'||session_id;
     seq VARCHAR:= 'message_id_seq';
 --My hope was to use the sequence to create a primary key for each table but I can't seem to get it to work with the Execute format
 BEGIN
@@ -66,17 +67,17 @@ BEGIN
             creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             sender_id INT NOT NULL,
             body VARCHAR(400 )
-        )', session_id);
+        )', session_id_table_name);
     
     --This creates the relation between User_Account and sesssion and message
     EXECUTE format('
      ALTER TABLE %I
          ADD FOREIGN KEY (sender_id) REFERENCES User_Account (user_id) ON DELETE CASCADE;
-     ', session_id);
+     ', session_id_table_name);
     EXECUTE format('
     ALTER TABLE %I
         ADD FOREIGN KEY (session_id) REFERENCES Session (session_id) ON DELETE CASCADE;
-    ', session_id);
+    ', session_id_table_name);
 
     --This trigger calls the notifyNewMessage after a message is created
     EXECUTE format('
@@ -84,9 +85,24 @@ BEGIN
             AFTER INSERT ON %I
             FOR EACH ROW
             EXECUTE PROCEDURE notify_new_message ( );
-    ', session_id);
+    ', session_id_table_name);
 
     
+    RETURN NULL;
+END;
+$$;
+
+--This function deletes a previously created messages table after its session is deleted
+CREATE FUNCTION delete_session_messages_table ()
+    RETURNS TRIGGER
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+    session_id VARCHAR := CAST(OLD.session_id AS VARCHAR);
+    session_id_table_name VARCHAR := 'messages_'||session_id;
+BEGIN
+    EXECUTE format('
+        DROP TABLE %I', session_id_table_name);
     RETURN NULL;
 END;
 $$;
@@ -98,3 +114,8 @@ CREATE TRIGGER new_session
     FOR EACH ROW
     EXECUTE PROCEDURE create_session_messages_table ();
 
+--THis trigger calls the deleteSessionMessagesTable after a session is deleted
+CREATE TRIGGER deleted_session
+    AFTER DELETE ON Session
+    FOR EACH ROW
+    EXECUTE PROCEDURE delete_session_messages_table ();
