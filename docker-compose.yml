@@ -1,0 +1,18 @@
+version: "3.7"
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: postgres
+      POSTGRES_DB: master
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  web:
+    image: code_foo_node_image
+    depends_on:
+      - db
+    ports:
+      - "9999:9999"

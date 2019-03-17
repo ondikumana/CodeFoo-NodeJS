@@ -1,13 +1,12 @@
 
 // const SERVER_IP_ADDRESS = '157.230.84.99';
-const SERVER_IP_ADDRESS = 'localhost';
+const SERVER_IP_ADDRESS = 'db';
 
 const express = require('express')
 const path = require('path')
 const async = require("async")
 const bodyParser = require('body-parser')
 const cors = require('cors')
-
 var app = express()
 
 const { Client } = require('pg')
@@ -19,9 +18,23 @@ const client = new Client({
   port: 5432,
 })
 
-client.connect().catch( err => console.log(err))
+let connectionRetries = 5
 
-cors({credentials: true, origin: true})
+while (connectionRetries) {
+  try {
+    await client.connect()
+  }
+  catch (error) {
+    console.log(err)
+    connectionRetries--
+    console.log(`connectionRetries left: ${connectionRetries}`)
+
+    // waits five seconds before trying again
+    await new Promise( res => setTimeout(res, 5000))
+  }
+}
+
+cors({ credentials: true, origin: true })
 app.use(cors())
 
 
@@ -34,5 +47,5 @@ app.use(bodyParser.urlencoded({ extended: true }))
 require('./src/User/User')(app, client)
 
 
-const server = app.listen(9999, () => console.log('\nCodeFoo NodeJS listening on port %s\nPress Ctrl-C to quit...\n', server.address().port) );
+const server = app.listen(9999, () => console.log('\nCodeFoo NodeJS listening on port %s\nPress Ctrl-C to quit...\n', server.address().port));
 
