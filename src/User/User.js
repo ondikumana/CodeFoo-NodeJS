@@ -34,6 +34,8 @@ module.exports = function (app, client) {
       return
     }
 
+    console.log('body', req.body)
+
     // inserts new user and sends back their user id
 
     try {
@@ -58,9 +60,11 @@ module.exports = function (app, client) {
       return
     }
 
+    const userId = parseInt(req.body.userId)
+
     // deletes user then the session they created is also delete because of cascade in DB. The messages Table is also deleted because of a function in the DB
     try {
-      await client.query(`delete from user_account where user_id = ${req.body.userId}`)
+      await client.query(`delete from user_account where user_id = ${userId}`)
 
       res.status(200).send({ message: "User Deleted" })
     }

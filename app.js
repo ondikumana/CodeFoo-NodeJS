@@ -1,6 +1,6 @@
 
-// const SERVER_IP_ADDRESS = '157.230.84.99';
-const SERVER_IP_ADDRESS = 'db';
+const SERVER_IP_ADDRESS = '157.230.84.99';
+// const SERVER_IP_ADDRESS = 'db';
 
 const express = require('express')
 const path = require('path')
@@ -8,6 +8,10 @@ const async = require("async")
 const bodyParser = require('body-parser')
 const cors = require('cors')
 var app = express()
+
+//socket stuff
+var io = require('socket.io')(9998)
+
 
 const { Client } = require('pg')
 const client = new Client({
@@ -51,7 +55,7 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 // routes in different files
 require('./src/User/User')(app, client)
-require('./src/Session/Session')(app, client)
+require('./src/Session/Session')(app, client, io)
 require('./src/Message/Message')(app, client)
 
 const server = app.listen(9999, () => console.log('\nCodeFoo NodeJS listening on port %s\nPress Ctrl-C to quit...\n', server.address().port));
