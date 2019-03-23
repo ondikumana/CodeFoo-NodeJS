@@ -1,4 +1,4 @@
-module.exports = function (app, client, io) {
+module.exports = function (app, client, io, sessionInfo) {
 
     app.get('/get_session', async (req, res) => {
 
@@ -10,7 +10,7 @@ module.exports = function (app, client, io) {
 
         let sessionId = req.query.sessionId ? parseInt(req.query.sessionId) : null
         let code = req.query.code
-        let friendId = req.query.friendId
+        let friendId = req.query.friendId ? parseInt(req.query.friendId) : null
 
         // logic to get session id from code
         if (code && !sessionId) {
@@ -23,10 +23,16 @@ module.exports = function (app, client, io) {
 
         }
 
-        try {
-            const result = await client.query(`update session set friend_id = ${friendId} where session_id = ${sessionId} and friend_id is null; select * from session where session_id = ${sessionId}`)
+        parseInt(sessionId)
 
-            res.status(200).send({ data: result.rows })
+        try {
+            await client.query(`update session set friend_id = ${friendId} where session_id = ${sessionId} and friend_id is null`)
+
+            const result = await client.query(`select * from session where session_id = ${sessionId}`)
+            let isApproved = false
+            if (result.rows[0].friend_id === friendId) isApproved = true
+
+            res.status(200).send({ data: result.rows, approved: isApproved })
         }
         catch (err) {
             console.log(err)
@@ -43,7 +49,7 @@ module.exports = function (app, client, io) {
             return
         }
 
-        console.log('body', req.body)
+        // console.log('body', req.body)
 
         const creatorId = parseInt(req.body.creatorId)
 
@@ -59,18 +65,9 @@ module.exports = function (app, client, io) {
                 code += alphabetArr[sessionId.charAt(i)]
             }
 
+            sessionInfo['sessionId'] = sessionId
+
             res.status(200).send({ sessionId: sessionId, code: code.toUpperCase() })
-
-            client.query('LISTEN friend_connected');
-
-            const friendConnectedSocket = io
-                .of(`/${sessionId}`)
-                .on('connection', (socket) => {
-                    client.on('notification', (message) => {
-                        socket.emit('friendConnected', JSON.parse(message.payload));
-                    })
-
-                });
 
         }
         catch (err) {

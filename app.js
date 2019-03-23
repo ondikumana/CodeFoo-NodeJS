@@ -2,15 +2,19 @@
 const SERVER_IP_ADDRESS = '157.230.84.99';
 // const SERVER_IP_ADDRESS = 'db';
 
-const express = require('express')
+// const express = require('express')
 const path = require('path')
 const async = require("async")
 const bodyParser = require('body-parser')
 const cors = require('cors')
+
+var express = require('express')
 var app = express()
+var server = require('http').createServer(app)
+var io = require('socket.io')(server)
 
 //socket stuff
-var io = require('socket.io')(9998)
+// var io = require('socket.io')(9999)
 
 
 const { Client } = require('pg')
@@ -53,10 +57,14 @@ app.use(cors())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 
+
+server.listen(9999, () => console.log('\nCodeFoo NodeJS listening on port %s\nPress Ctrl-C to quit...\n', server.address().port));
+
+let sessionInfo = {}
+
 // routes in different files
 require('./src/User/User')(app, client)
-require('./src/Session/Session')(app, client, io)
-require('./src/Message/Message')(app, client)
-
-const server = app.listen(9999, () => console.log('\nCodeFoo NodeJS listening on port %s\nPress Ctrl-C to quit...\n', server.address().port));
+require('./src/Session/Session')(app, client, io, sessionInfo)
+require('./src/Message/Message')(app, client, io, sessionInfo)
+require('./src/Socket/Socket')(app, client, io, sessionInfo)
 

@@ -1,12 +1,5 @@
 module.exports = function (app, client) {
 
-
-    client.query('LISTEN new_message');
-
-    client.on('notification', (message) => {
-        console.log(JSON.parse(message.payload))
-    })
-
     app.get('/get_messages', async (req, res) => {
 
         //check if it has valid params

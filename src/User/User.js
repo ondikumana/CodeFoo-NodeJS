@@ -34,8 +34,6 @@ module.exports = function (app, client) {
       return
     }
 
-    console.log('body', req.body)
-
     // inserts new user and sends back their user id
 
     try {
