@@ -2,6 +2,7 @@ module.exports = function (app, client, io) {
 
     client.query('LISTEN friend_connected');
     client.query('LISTEN new_message');
+    client.query('LISTEN deleted_session');
 
     io.on('connection', (socket) => {
         // console.log('connected on Session', socket)
@@ -12,6 +13,7 @@ module.exports = function (app, client, io) {
             const channel = message.channel
             if (channel == 'new_message') {
                 // console.log('new Message', JSON.parse(message.payload))
+                let sessionId = JSON.parse(message.payload).session_id
                 sessionId = sessionId.toString()
 
                 let payload = JSON.parse(message.payload)
@@ -26,6 +28,17 @@ module.exports = function (app, client, io) {
 
                 let payload = JSON.parse(message.payload)
                 payload['type'] = 'friendConnected'
+
+                socket.emit(sessionId, payload)
+            }
+
+            else if (channel == 'deleted_session') {
+                // console.log('session deleted', JSON.parse(message.payload))
+                let sessionId = JSON.parse(message.payload).session_id
+                sessionId = sessionId.toString()
+
+                let payload = JSON.parse(message.payload)
+                payload['type'] = 'deletedSession'
 
                 socket.emit(sessionId, payload)
             }

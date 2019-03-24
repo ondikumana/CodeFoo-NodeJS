@@ -1,6 +1,6 @@
 module.exports = function (app, client, io, sessionInfo) {
 
-    app.get('/get_session', async (req, res) => {
+    app.get('/join_session', async (req, res) => {
 
         //check if it has valid params
         if (!req.query) {
@@ -33,6 +33,30 @@ module.exports = function (app, client, io, sessionInfo) {
             if (result.rows[0].friend_id === friendId) isApproved = true
 
             res.status(200).send({ data: result.rows, approved: isApproved })
+        }
+        catch (err) {
+            console.log(err)
+            res.status(404).send(err)
+        }
+        return
+    })
+
+    app.get('/get_session', async (req, res) => {
+
+        //check if it has valid params
+        if (!req.query) {
+            res.status(404).send({ error: "missing params" })
+            return
+        }
+
+        let sessionId = req.query.sessionId ? parseInt(req.query.sessionId) : null
+        let code = req.query.code
+        let friendId = req.query.friendId ? parseInt(req.query.friendId) : null
+
+        try {
+            const result = await client.query(`select * from session where session_id = ${sessionId}`)
+
+            res.status(200).send({ data: result.rows })
         }
         catch (err) {
             console.log(err)

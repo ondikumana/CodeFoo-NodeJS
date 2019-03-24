@@ -61,6 +61,19 @@ BEGIN
 END;
 $$;
 
+--This function creates a notification regarding the deletion of a session.
+
+CREATE FUNCTION notify_deleted_session ()
+    RETURNS TRIGGER
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    PERFORM
+        pg_notify('deleted_session', row_to_json(OLD)::text);
+    RETURN NULL;
+END;
+$$;
+
 --This function creates a new table to store messages every time a session is created
 
 CREATE FUNCTION create_session_messages_table ()
@@ -74,31 +87,31 @@ DECLARE
     --My hope was to use the sequence to create a primary key for each table but I can't seem to get it to work with the Execute format
 BEGIN
     EXECUTE format('
-          CREATE TABLE %I (
-   
-              session_id INT NOT NULL,
-              TYPE VARCHAR(100 ) NOT NULL,
-              attachment VARCHAR(200 ),
-              creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-              sender_id INT NOT NULL,
-              body VARCHAR(400 )
-          )', session_id_table_name);
+            CREATE TABLE %I (
+     
+                session_id INT NOT NULL,
+                TYPE VARCHAR(100 ) NOT NULL,
+                attachment VARCHAR(200 ),
+                creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                sender_id INT NOT NULL,
+                body VARCHAR(400 )
+            )', session_id_table_name);
     --This creates the relation between User_Account and sesssion and message
     EXECUTE format('
-       ALTER TABLE %I
-           ADD FOREIGN KEY (sender_id) REFERENCES User_Account (user_id) ON DELETE CASCADE;
-       ', session_id_table_name);
+         ALTER TABLE %I
+             ADD FOREIGN KEY (sender_id) REFERENCES User_Account (user_id) ON DELETE CASCADE;
+         ', session_id_table_name);
     EXECUTE format('
-      ALTER TABLE %I
-          ADD FOREIGN KEY (session_id) REFERENCES Session (session_id) ON DELETE CASCADE;
-      ', session_id_table_name);
+        ALTER TABLE %I
+            ADD FOREIGN KEY (session_id) REFERENCES Session (session_id) ON DELETE CASCADE;
+        ', session_id_table_name);
     --This trigger calls the notifyNewMessage after a message is created
     EXECUTE format('
-      CREATE TRIGGER new_message_trigger
-              AFTER INSERT ON %I
-              FOR EACH ROW
-              EXECUTE PROCEDURE notify_new_message ( );
-      ', session_id_table_name);
+        CREATE TRIGGER new_message_trigger
+                AFTER INSERT ON %I
+                FOR EACH ROW
+                EXECUTE PROCEDURE notify_new_message ( );
+        ', session_id_table_name);
     RETURN NULL;
 END;
 $$;
@@ -114,7 +127,7 @@ DECLARE
     session_id_table_name VARCHAR := 'messages_' || session_id;
 BEGIN
     EXECUTE format('
-          DROP TABLE %I', session_id_table_name);
+            DROP TABLE %I', session_id_table_name);
     RETURN NULL;
 END;
 $$;
@@ -136,8 +149,15 @@ CREATE TRIGGER friend_connected
 
 --THis trigger calls the deleteSessionMessagesTable after a session is deleted
 
-CREATE TRIGGER deleted_session
+CREATE TRIGGER deleted_session_messages
     AFTER DELETE ON Session
     FOR EACH ROW
     EXECUTE PROCEDURE delete_session_messages_table ();
+
+--This is used to notify the people in the session that it's deleted
+
+CREATE TRIGGER deleted_session_notification
+    AFTER DELETE ON Session
+    FOR EACH ROW
+    EXECUTE PROCEDURE notify_deleted_session ();
 

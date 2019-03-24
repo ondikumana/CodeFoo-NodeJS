@@ -1,6 +1,6 @@
 
-const SERVER_IP_ADDRESS = '157.230.84.99';
-// const SERVER_IP_ADDRESS = 'db';
+// const SERVER_IP_ADDRESS = '157.230.84.99';
+const SERVER_IP_ADDRESS = 'db';
 
 // const express = require('express')
 const path = require('path')
