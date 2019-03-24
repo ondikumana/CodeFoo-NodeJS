@@ -3,29 +3,30 @@ module.exports = function (app, client, io, sessionInfo) {
     app.get('/join_session', async (req, res) => {
 
         //check if it has valid params
-        if (!req.query) {
+        if (!req.query.sessionId && !req.query.code && !req.query.friendId) {
             res.status(404).send({ error: "missing params" })
             return
         }
 
-        let sessionId = req.query.sessionId ? parseInt(req.query.sessionId) : null
-        let code = req.query.code
-        let friendId = req.query.friendId ? parseInt(req.query.friendId) : null
+        try {
 
-        // logic to get session id from code
-        if (code && !sessionId) {
-            code = code.toLowerCase()
-            sessionId = ''
-            const alphabetArr = ("abcdefghijklmnopqrstuvwxyz").split('')
-            for (let i = 0; i < code.length; i++) {
-                sessionId += alphabetArr.indexOf(code.charAt(i))
+            let sessionId = req.query.sessionId ? parseInt(req.query.sessionId) : null
+            let code = req.query.code
+            let friendId = req.query.friendId ? parseInt(req.query.friendId) : null
+
+            // logic to get session id from code
+            if (code && !sessionId) {
+                code = code.toLowerCase()
+                sessionId = ''
+                const alphabetArr = ("abcdefghijklmnopqrstuvwxyz").split('')
+                for (let i = 0; i < code.length; i++) {
+                    sessionId += alphabetArr.indexOf(code.charAt(i))
+                }
+
             }
 
-        }
+            parseInt(sessionId)
 
-        parseInt(sessionId)
-
-        try {
             await client.query(`update session set friend_id = ${friendId} where session_id = ${sessionId} and friend_id is null`)
 
             const result = await client.query(`select * from session where session_id = ${sessionId}`)
