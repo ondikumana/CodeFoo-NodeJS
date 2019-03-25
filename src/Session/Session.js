@@ -1,4 +1,4 @@
-module.exports = function (app, client, io, sessionInfo) {
+module.exports = function (app, client) {
 
     app.get('/join_session', async (req, res) => {
 
@@ -89,8 +89,6 @@ module.exports = function (app, client, io, sessionInfo) {
             for (let i = 0; i < sessionId.length; i++) {
                 code += alphabetArr[sessionId.charAt(i)]
             }
-
-            sessionInfo['sessionId'] = sessionId
 
             res.status(200).send({ sessionId: sessionId, code: code.toUpperCase() })
 
