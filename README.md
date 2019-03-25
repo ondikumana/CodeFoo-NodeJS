@@ -29,3 +29,4 @@ This NodeJS project is already running on a private server inside a docker conta
 - When setting up messages tables in postgres, figure out how to add a message id using sequences. Other tables have that implemented, but messages tables are created from a trigger of a new session and I still need to figure out how to give them their own sequence.
 - Use rooms in SocketIO instead of different session id names as events
 - Use NGINX to encrypt the NodeJS app
+- Improve documentation
